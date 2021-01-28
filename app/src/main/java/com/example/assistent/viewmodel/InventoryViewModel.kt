@@ -19,4 +19,7 @@ class InventoryViewModel(val dao:AssistentDAO, val id_Mol:Int):ViewModel() {
             inventoryLiveData.postValue(inventoryById)
         }
 
-    }}
+    }
+
+
+}

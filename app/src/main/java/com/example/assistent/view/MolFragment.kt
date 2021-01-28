@@ -13,6 +13,7 @@ import com.example.assistent.view.MoleActivity
 import com.example.assistent.R
 import com.example.assistent.databinding.FragmentMolBinding
 import com.example.assistent.db.AssistentDatabase
+import com.example.assistent.entity.Inventory
 import com.example.assistent.entity.MOL
 import com.example.assistent.util.replaceFragment
 import com.example.assistent.viewmodel.MoleViewModel
@@ -42,12 +43,14 @@ class MolFragment:Fragment(),MolClickListener {
         binding.rvMol.layoutManager = LinearLayoutManager(this.context)
         binding.rvMol.adapter = molAdapter
         molViewModel.getMol()
-        molViewModel.molLiveData.observe(this.viewLifecycleOwner, Observer {
-            molAdapter.list.addAll(it)
-            molAdapter.notifyDataSetChanged()
-        })
+        molViewModel.molLiveData.observe(this.viewLifecycleOwner, observer)
     }
 
+    private val observer = Observer<List<MOL>> { list ->
+        molAdapter.list.clear()
+        molAdapter.list.addAll(list)
+        molAdapter.notifyDataSetChanged()
+    }
     override fun onItemMolClick(mol_id: Int?) {
         (this.activity as MoleActivity).replaceFragment( R.id.fragment_container, InventoryFragment.newInstance(mol_id),"inventory")
     }

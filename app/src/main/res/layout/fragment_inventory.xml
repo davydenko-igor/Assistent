@@ -14,11 +14,55 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/fabAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#6A0902"
+        android:focusable="true"
+        android:src="@drawable/ic_add"
+        android:tint="@color/white"
+        app:borderWidth="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:rippleColor="@color/white" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabScanner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#E3756E"
+        android:focusable="true"
+        app:borderWidth="0dp"
+        android:src="@drawable/ic_scanner"
+        android:tint="@color/white"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@id/fabAdd"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:rippleColor="@color/white" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#E3756E"
+        android:focusable="true"
+        app:borderWidth="0dp"
+        android:src="@drawable/ic_save"
+        android:tint="@color/white"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@id/fabScanner"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:rippleColor="@color/white" />
 </androidx.constraintlayout.widget.ConstraintLayout>

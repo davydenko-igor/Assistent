@@ -1,10 +1,13 @@
 package com.example.assistent.view
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.StrictMode
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +30,12 @@ class MainActivity : AppCompatActivity() {
     val db = "assistdb"
     var connect: Connection? = null
 
+    val APP_PREFERENCES = "input_settings"
+    val APP_PREFERENCES_LOGIN = "Login"
+    val APP_PREFERENCES_PASSWORD = "Password"
+    val APP_PREFERENCES_SERVER = "Server"
+
+    lateinit var mSettings: SharedPreferences
     val dao by inject<AssistentDatabase>()
 
     private var binding: ActivityMainBinding? = null
@@ -46,15 +55,25 @@ class MainActivity : AppCompatActivity() {
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
 
+        mSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE)
+
         binding!!.btnLogin.setOnClickListener {
             try {
                 Class.forName(Classes)
                 val login = binding!!.edLogin.text.toString()
                 val pass = binding!!.edPassword.text.toString()
                 val server = binding!!.edServer.text.toString()
+
                 val url = "jdbc:jtds:sqlserver://"+server+":"+port+"/"+db
                 connect = DriverManager.getConnection(url, login, pass)
 
+                if(connect!=null){
+                    val editor = mSettings.edit()
+                    editor.putString(APP_PREFERENCES_LOGIN,login)
+                    editor.putString(APP_PREFERENCES_PASSWORD,pass)
+                    editor.putString(APP_PREFERENCES_SERVER,server)
+                    editor.apply()
+                }
                 coroutineScope.launch {
                     openMoleActivity()
                 }
@@ -69,16 +88,21 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-
-
+//        if (mSettings.contains(APP_PREFERENCES_LOGIN)) {
+//            val logins = arrayListOf(mSettings.getString(APP_PREFERENCES_LOGIN,""))
+//            var adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, logins)
+//            binding!!.edLogin.threshold = 0
+//            binding!!.edLogin.setAdapter(adapter)
+//            binding!!.edLogin.setOnFocusChangeListener { v, hasFocus -> if(hasFocus) binding!!.edLogin.showDropDown() }
+//        }
     }
 
     suspend fun openMoleActivity(){
         val listMol = mutableListOf<MOL>()
         val listInventory = mutableListOf<Inventory>()
         if(connect!=null){
-            var statementMol: Statement?
-            var statementInventory:Statement?
+            val statementMol: Statement?
+            val statementInventory:Statement?
             try {
                 statementMol = connect?.createStatement()
                 val moleTable = statementMol?.executeQuery("Select * from MOL_TABLE;")
