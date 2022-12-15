@@ -1,31 +1,24 @@
 package com.example.assistent.view.adapter
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.assistent.view.MoleActivity
 import com.example.assistent.R
 import com.example.assistent.databinding.FragmentMolBinding
-import com.example.assistent.db.AssistentDatabase
-import com.example.assistent.entity.Inventory
 import com.example.assistent.entity.MOL
 import com.example.assistent.util.replaceFragment
+import com.example.assistent.view.MoleActivity
 import com.example.assistent.viewmodel.MoleViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
-class MolFragment:Fragment(),MolClickListener {
+class MolFragment : Fragment(), MolClickListener {
     private var _binding: FragmentMolBinding? = null
     private val binding get() = _binding!!
-    private lateinit var molAdapter:MoleAdapter
+    private lateinit var molAdapter: MoleAdapter
     private val molViewModel by inject<MoleViewModel>()
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,7 +44,12 @@ class MolFragment:Fragment(),MolClickListener {
         molAdapter.list.addAll(list)
         molAdapter.notifyDataSetChanged()
     }
+
     override fun onItemMolClick(mol_id: Int?) {
-        (this.activity as MoleActivity).replaceFragment( R.id.fragment_container, InventoryFragment.newInstance(mol_id),"inventory")
+        (this.activity as MoleActivity).replaceFragment(
+            R.id.fragment_container,
+            InventoryFragment.newInstance(mol_id),
+            "inventory"
+        )
     }
 }
