@@ -6,19 +6,22 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.assistent.databinding.RecyclerMoleItemBinding
 import com.example.assistent.entity.MOL
 
-class MoleAdapter(private val clickListener: MolClickListener): RecyclerView.Adapter<MoleAdapter.MoleViewHolder>() {
+class MoleAdapter(private val clickListener: MolClickListener) :
+    RecyclerView.Adapter<MoleAdapter.MoleViewHolder>() {
     var list = mutableListOf<MOL>()
     private var binding: RecyclerMoleItemBinding? = null
 
-    class MoleViewHolder (itemView: RecyclerMoleItemBinding) : RecyclerView.ViewHolder(itemView.root) {
+    class MoleViewHolder(itemView: RecyclerMoleItemBinding) :
+        RecyclerView.ViewHolder(itemView.root) {
         private val tvMol = itemView.tvMol
-        fun bind(item: MOL){
+        fun bind(item: MOL) {
             tvMol.text = item.FIO
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoleViewHolder {
-        binding = RecyclerMoleItemBinding.inflate(LayoutInflater.from(parent.context),parent,false)
+        binding =
+            RecyclerMoleItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MoleViewHolder(binding!!)
     }
 

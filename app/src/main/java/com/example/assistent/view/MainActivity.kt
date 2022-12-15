@@ -22,23 +22,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import java.sql.*
+import java.util.*
 
+const val port = "3306"
+const val Classes = "com.mysql.jdbc.Driver"
+const val db = "sys"
+const val APP_PREFERENCES = "input_settings"
+const val APP_PREFERENCES_LOGIN = "Login"
+const val APP_PREFERENCES_PASSWORD = "Password"
+const val APP_PREFERENCES_SERVER = "Server"
 
 class MainActivity : AppCompatActivity() {
-    val port = "1433"
-    val Classes = "net.sourceforge.jtds.jdbc.Driver"
-    val db = "assistdb"
-    var connect: Connection? = null
 
-    val APP_PREFERENCES = "input_settings"
-    val APP_PREFERENCES_LOGIN = "Login"
-    val APP_PREFERENCES_PASSWORD = "Password"
-    val APP_PREFERENCES_SERVER = "Server"
+    var connect: Connection? = null
 
     lateinit var mSettings: SharedPreferences
     val dao by inject<AssistentDatabase>()
 
     private var binding: ActivityMainBinding? = null
+
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +49,6 @@ class MainActivity : AppCompatActivity() {
         val view = binding!!.root
         setContentView(view)
 
-        val coroutineScope = CoroutineScope(Dispatchers.IO)
         ActivityCompat.requestPermissions(
             this,
             arrayOf(Manifest.permission.INTERNET),
@@ -59,31 +61,31 @@ class MainActivity : AppCompatActivity() {
 
         binding!!.btnLogin.setOnClickListener {
             try {
-                Class.forName(Classes)
+                Class.forName(Classes).newInstance()
                 val login = binding!!.edLogin.text.toString()
                 val pass = binding!!.edPassword.text.toString()
                 val server = binding!!.edServer.text.toString()
 
-                val url = "jdbc:jtds:sqlserver://"+server+":"+port+"/"+db
+                val url = "jdbc:mysql://$server:$port/$db"
                 connect = DriverManager.getConnection(url, login, pass)
 
-                if(connect!=null){
+                if (connect != null) {
                     val editor = mSettings.edit()
-                    editor.putString(APP_PREFERENCES_LOGIN,login)
-                    editor.putString(APP_PREFERENCES_PASSWORD,pass)
-                    editor.putString(APP_PREFERENCES_SERVER,server)
+                    editor.putString(APP_PREFERENCES_LOGIN, login)
+                    editor.putString(APP_PREFERENCES_PASSWORD, pass)
+                    editor.putString(APP_PREFERENCES_SERVER, server)
                     editor.apply()
                 }
-                coroutineScope.launch {
-                    openMoleActivity()
-                }
 
-            }catch (e: ClassNotFoundException){
+                openMoleActivity()
+
+
+            } catch (e: ClassNotFoundException) {
                 e.printStackTrace()
-                Toast.makeText(this, "ERROR", Toast.LENGTH_SHORT).show()
-            }catch (e: SQLException){
+                Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+            } catch (e: SQLException) {
                 e.printStackTrace()
-                Toast.makeText(this, "FAILURE", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
             }
 
         }
@@ -97,37 +99,38 @@ class MainActivity : AppCompatActivity() {
 //        }
     }
 
-    suspend fun openMoleActivity(){
+    private fun openMoleActivity() = coroutineScope.launch {
         val listMol = mutableListOf<MOL>()
         val listInventory = mutableListOf<Inventory>()
-        if(connect!=null){
+        if (connect != null) {
             val statementMol: Statement?
-            val statementInventory:Statement?
+            val statementInventory: Statement?
             try {
                 statementMol = connect?.createStatement()
                 val moleTable = statementMol?.executeQuery("Select * from MOL_TABLE;")
-                while (moleTable?.next()!!){
+                while (moleTable?.next()!!) {
                     val id_Mol = moleTable.getInt(1)
                     val FIO = moleTable.getString(2)
-                    val mole = MOL(id_Mol,FIO)
+                    val mole = MOL(id_Mol, FIO)
                     listMol.add(mole)
                 }
 
                 dao.getAssistentDAO.addMOL(listMol)
                 statementInventory = connect?.createStatement()
-                val inventoryTable = statementInventory?.executeQuery("Select * from INVENTORY_TABLE;")
-                while (inventoryTable?.next()!!){
+                val inventoryTable =
+                    statementInventory?.executeQuery("Select * from INVENTORY_TABLE;")
+                while (inventoryTable?.next()!!) {
                     val id_inventory = inventoryTable.getInt(1)
                     val id_Mol = inventoryTable.getInt(2)
                     val name_inventory = inventoryTable.getString(3)
                     val code_inventory = inventoryTable.getInt(4)
-                    val inventory = Inventory(id_inventory,id_Mol,name_inventory,code_inventory)
+                    val inventory = Inventory(id_inventory, id_Mol, name_inventory, code_inventory)
                     listInventory.add(inventory)
                 }
                 dao.getAssistentDAO.addInventory(listInventory)
-                val intent = Intent(this, MoleActivity::class.java)
+                val intent = Intent(this@MainActivity, MoleActivity::class.java)
                 startActivity(intent)
-            }catch (e: SQLException){
+            } catch (e: SQLException) {
                 e.printStackTrace()
             }
         }

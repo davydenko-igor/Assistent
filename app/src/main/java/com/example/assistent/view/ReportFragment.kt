@@ -21,9 +21,10 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 
-class ReportFragment: Fragment() {
+class ReportFragment : Fragment() {
     private var _binding: FragmentReportBinding? = null
     private val binding get() = _binding!!
+
     companion object {
 
         @JvmStatic
@@ -34,14 +35,17 @@ class ReportFragment: Fragment() {
             }
         }
     }
+
     private var listOfInventory: List<Inventory>? = null
     private var listOfTrashCode = ArrayList<Int?>()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        listOfInventory = arguments?.getParcelableArray("inventoryData")?.toList() as? List<Inventory>
+        listOfInventory =
+            arguments?.getParcelableArray("inventoryData")?.toList() as? List<Inventory>
         listOfTrashCode = arguments?.getIntegerArrayList("trashList") as ArrayList<Int?>
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -51,23 +55,23 @@ class ReportFragment: Fragment() {
         return binding.root
     }
 
-    private var filePath:File? = null
+    private var filePath: File? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         var find = 0
         var notfind = 0
         var repeat = 0
-        filePath = File(context?.getExternalFilesDir(null),"Report.xls")
+        filePath = File(context?.getExternalFilesDir(null), "Report.xls")
         listOfInventory?.forEach {
-            when(it.state){
+            when (it.state) {
                 1 -> find += 1
                 4 -> notfind += 1
                 2 -> repeat += 1
             }
         }
         val trash = listOfTrashCode.size.toString()
-        binding.tvFind.text = (find+repeat).toString()
+        binding.tvFind.text = (find + repeat).toString()
         binding.tvNotFind.text = notfind.toString()
         binding.tvRepeat.text = repeat.toString()
         binding.tvNotFromList.text = trash
@@ -81,12 +85,12 @@ class ReportFragment: Fragment() {
                     ), PackageManager.PERMISSION_GRANTED
                 )
             }
-            createExcelReport(find,notfind,repeat,trash)
+            createExcelReport(find, notfind, repeat, trash)
         }
 
     }
 
-    private fun createExcelReport(find:Int,notFind:Int,repeat:Int,trash:String){
+    private fun createExcelReport(find: Int, notFind: Int, repeat: Int, trash: String) {
         val wb = HSSFWorkbook()
 
         val sheet = wb.createSheet("REPORT")

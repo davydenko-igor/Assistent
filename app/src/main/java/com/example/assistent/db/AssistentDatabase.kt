@@ -8,5 +8,5 @@ import com.example.assistent.entity.MOL
 
 @Database(version = 1, entities = [MOL::class, Inventory::class])
 abstract class AssistentDatabase : RoomDatabase() {
-    abstract val getAssistentDAO : AssistentDAO
+    abstract val getAssistentDAO: AssistentDAO
 }

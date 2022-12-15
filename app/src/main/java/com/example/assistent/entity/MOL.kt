@@ -6,5 +6,5 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "MOL_TABLE")
 data class MOL(
     @PrimaryKey val id_Mol: Int?,
-    val FIO : String?
+    val FIO: String?
 )

@@ -23,19 +23,39 @@ import com.google.zxing.integration.android.IntentIntegrator
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
-class InventoryFragment:Fragment() {
+class InventoryFragment : Fragment() {
 
-    private val rotateOpen: Animation by lazy { AnimationUtils.loadAnimation(this.context, R.anim.rotate_open_anim) }
-    private val rotateClose: Animation by lazy { AnimationUtils.loadAnimation(this.context, R.anim.rotate_close_anim) }
-    private val fromBottom: Animation by lazy { AnimationUtils.loadAnimation(this.context, R.anim.from_bottom_anim) }
-    private val toBottom: Animation by lazy { AnimationUtils.loadAnimation(this.context, R.anim.to_bottom_anim) }
+    private val rotateOpen: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            this.context,
+            R.anim.rotate_open_anim
+        )
+    }
+    private val rotateClose: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            this.context,
+            R.anim.rotate_close_anim
+        )
+    }
+    private val fromBottom: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            this.context,
+            R.anim.from_bottom_anim
+        )
+    }
+    private val toBottom: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            this.context,
+            R.anim.to_bottom_anim
+        )
+    }
     private var clicked = false
 
     private var _binding: FragmentInventoryBinding? = null
     private val binding get() = _binding!!
     private lateinit var inventoryAdapter: InventoryAdapter
 
-    private val inventoryViewModel:InventoryViewModel by viewModel{ parametersOf(id_Mol) }
+    private val inventoryViewModel: InventoryViewModel by viewModel { parametersOf(id_Mol) }
 
     private val listOfInventory = mutableListOf<Inventory?>()
     private val listOfTrashCode = ArrayList<Int?>()
@@ -84,14 +104,18 @@ class InventoryFragment:Fragment() {
         }
         binding.fabSave.setOnClickListener {
             listOfInventory.forEach {
-                if(it?.state == 0){
+                if (it?.state == 0) {
                     it.state = 4
                 }
             }
             arguments = Bundle()
             arguments!!.putParcelableArray("inventoryData", listOfInventory.toTypedArray())
             arguments!!.putIntegerArrayList("trashList", listOfTrashCode)
-            (this.activity as MoleActivity).replaceFragment( R.id.fragment_container, ReportFragment.newInstance(arguments!!),"report")
+            (this.activity as MoleActivity).replaceFragment(
+                R.id.fragment_container,
+                ReportFragment.newInstance(arguments!!),
+                "report"
+            )
         }
         inventoryViewModel.inventoryLiveData.observe(this.viewLifecycleOwner, Observer {
             inventoryAdapter.list.clear()
@@ -103,42 +127,45 @@ class InventoryFragment:Fragment() {
         })
     }
 
-    private fun onAddButtonClicked(){
+    private fun onAddButtonClicked() {
         setVisibility(clicked)
         setAnimation(clicked)
         setClickable(clicked)
         clicked = !clicked
     }
-    private fun setVisibility(clicked:Boolean){
-        if(!clicked){
+
+    private fun setVisibility(clicked: Boolean) {
+        if (!clicked) {
             binding.fabScanner.visibility = View.VISIBLE
             binding.fabSave.visibility = View.VISIBLE
-        }else{
+        } else {
             binding.fabScanner.visibility = View.INVISIBLE
             binding.fabSave.visibility = View.INVISIBLE
         }
     }
-    private fun setAnimation(clicked:Boolean){
-        if(!clicked){
+
+    private fun setAnimation(clicked: Boolean) {
+        if (!clicked) {
             binding.fabSave.startAnimation(fromBottom)
             binding.fabScanner.startAnimation(fromBottom)
             binding.fabAdd.startAnimation(rotateOpen)
-        }else{
+        } else {
             binding.fabSave.startAnimation(toBottom)
             binding.fabScanner.startAnimation(toBottom)
             binding.fabAdd.startAnimation(rotateClose)
         }
     }
 
-    private fun setClickable(clicked: Boolean){
-        if(!clicked){
+    private fun setClickable(clicked: Boolean) {
+        if (!clicked) {
             binding.fabScanner.isClickable = true
             binding.fabSave.isClickable = true
-        }else{
+        } else {
             binding.fabScanner.isClickable = false
             binding.fabSave.isClickable = false
         }
     }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         if (result != null) {
@@ -147,21 +174,21 @@ class InventoryFragment:Fragment() {
             } else {
                 var trash = false
 
-                for(index in listOfInventory.indices){
-                    if(listOfInventory[index]?.code_inventory == result.contents.toInt()){
+                for (index in listOfInventory.indices) {
+                    if (listOfInventory[index]?.code_inventory == result.contents.toInt()) {
                         trash = false
-                        if(listOfInventory[index]?.state == 0){
+                        if (listOfInventory[index]?.state == 0) {
                             listOfInventory[index]?.state = 1
                             inventoryAdapter.setFindInventory(listOfInventory[index])
-                        }else if(listOfInventory[index]?.state == 1){
+                        } else if (listOfInventory[index]?.state == 1) {
                             listOfInventory[index]?.state = 2
                         }
                         break
-                    }else{
+                    } else {
                         trash = true
                     }
                 }
-                if (trash){
+                if (trash) {
                     listOfTrashCode.add(result.contents.toInt())
                 }
             }

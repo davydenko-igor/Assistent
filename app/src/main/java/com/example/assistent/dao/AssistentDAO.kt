@@ -10,13 +10,13 @@ import com.example.assistent.entity.MOL
 @Dao
 interface AssistentDAO {
     @Query("SELECT * FROM MOL_TABLE")
-    fun getAllMOL():List<MOL>
+    fun getAllMOL(): List<MOL>
 
     @Query("SELECT * FROM INVENTORY_TABLE")
-    fun getAllInventory():List<Inventory>
+    fun getAllInventory(): List<Inventory>
 
     @Query("SELECT * FROM INVENTORY_TABLE WHERE id_Mol = :id_Mol")
-    fun getInventoryById(id_Mol: Int?):List<Inventory>
+    fun getInventoryById(id_Mol: Int?): List<Inventory>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addMOL(MOL: List<MOL>)

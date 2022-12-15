@@ -7,7 +7,7 @@ import com.example.assistent.db.AssistentDatabase
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
-val databaseModule = module{
+val databaseModule = module {
     fun provideDatabase(application: Application): AssistentDatabase {
         return Room.databaseBuilder(application, AssistentDatabase::class.java, "assistdb")
             .fallbackToDestructiveMigration()
@@ -15,7 +15,7 @@ val databaseModule = module{
     }
 
     fun provideAssistentDAO(database: AssistentDatabase): AssistentDAO {
-        return  database.getAssistentDAO
+        return database.getAssistentDAO
     }
 
     single { provideDatabase(androidApplication()) }
