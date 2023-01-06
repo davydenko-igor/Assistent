@@ -19,6 +19,7 @@ import com.example.assistent.entity.Inventory
 import com.example.assistent.entity.MOL
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import java.sql.*
@@ -59,6 +60,8 @@ class MainActivity : AppCompatActivity() {
 
         mSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE)
 
+        //fillDefaultLoginData()
+
         binding!!.btnLogin.setOnClickListener {
             try {
                 Class.forName(Classes).newInstance()
@@ -67,19 +70,20 @@ class MainActivity : AppCompatActivity() {
                 val server = binding!!.edServer.text.toString()
 
                 val url = "jdbc:mysql://$server:$port/$db"
-                connect = DriverManager.getConnection(url, login, pass)
-
-                if (connect != null) {
-                    val editor = mSettings.edit()
-                    editor.putString(APP_PREFERENCES_LOGIN, login)
-                    editor.putString(APP_PREFERENCES_PASSWORD, pass)
-                    editor.putString(APP_PREFERENCES_SERVER, server)
-                    editor.apply()
+                val result = coroutineScope.async {
+                    DriverManager.getConnection(url, login, pass)
                 }
-
-                openMoleActivity()
-
-
+                coroutineScope.launch {
+                    connect = result.await()
+                    if (connect != null) {
+                        val editor = mSettings.edit()
+                        editor.putString(APP_PREFERENCES_LOGIN, login)
+                        editor.putString(APP_PREFERENCES_PASSWORD, pass)
+                        editor.putString(APP_PREFERENCES_SERVER, server)
+                        editor.apply()
+                        openMoleActivity()
+                    }
+                }
             } catch (e: ClassNotFoundException) {
                 e.printStackTrace()
                 Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
@@ -97,6 +101,20 @@ class MainActivity : AppCompatActivity() {
 //            binding!!.edLogin.setAdapter(adapter)
 //            binding!!.edLogin.setOnFocusChangeListener { v, hasFocus -> if(hasFocus) binding!!.edLogin.showDropDown() }
 //        }
+    }
+
+//    private fun fillDefaultLoginData(){
+//        binding!!.edLogin.setText("andrey")
+//        binding!!.edPassword.setText("123456")
+//        binding!!.edServer.setText("93.170.237.200")
+//    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun openMoleActivity() = coroutineScope.launch {

@@ -1,15 +1,22 @@
 package com.example.assistent.view
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import com.example.assistent.databinding.FragmentReportBinding
 import com.example.assistent.entity.Inventory
@@ -19,6 +26,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.net.URL
 
 
 class ReportFragment : Fragment() {
@@ -26,7 +34,6 @@ class ReportFragment : Fragment() {
     private val binding get() = _binding!!
 
     companion object {
-
         @JvmStatic
         fun newInstance(data: Bundle) = ReportFragment().apply {
             arguments = data.apply {
@@ -55,14 +62,14 @@ class ReportFragment : Fragment() {
         return binding.root
     }
 
-    private var filePath: File? = null
+    private var find = 0
+    private var notfind = 0
+    private var repeat = 0
+    private var trash = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        var find = 0
-        var notfind = 0
-        var repeat = 0
-        filePath = File(context?.getExternalFilesDir(null), "Report.xls")
+
         listOfInventory?.forEach {
             when (it.state) {
                 1 -> find += 1
@@ -70,18 +77,20 @@ class ReportFragment : Fragment() {
                 2 -> repeat += 1
             }
         }
-        val trash = listOfTrashCode.size.toString()
+        trash = listOfTrashCode.size.toString()
         binding.tvFind.text = (find + repeat).toString()
         binding.tvNotFind.text = notfind.toString()
         binding.tvRepeat.text = repeat.toString()
         binding.tvNotFromList.text = trash
 
         binding.btExcelReport.setOnClickListener {
+
             this.activity?.let { activity ->
                 ActivityCompat.requestPermissions(
                     activity, arrayOf(
                         Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.MANAGE_EXTERNAL_STORAGE
                     ), PackageManager.PERMISSION_GRANTED
                 )
             }
@@ -120,21 +129,37 @@ class ReportFragment : Fragment() {
 
         sheet.setColumnWidth(0, 10 * 200)
         sheet.setColumnWidth(1, 10 * 200)
-        var outputStream: FileOutputStream? = null
+        var fileUri: Uri? = null
         try {
-            outputStream = FileOutputStream(filePath)
-            wb.write(outputStream)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val resolver = context?.contentResolver
+                val contentValues = ContentValues()
+                contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "report.xls")
+                contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "application/vnd.ms-excel")
+                contentValues.put(
+                    MediaStore.MediaColumns.RELATIVE_PATH,
+                    Environment.DIRECTORY_DOWNLOADS
+                )
+                val filesUri = resolver?.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                fileUri = filesUri
+                if (filesUri != null) {
+                    resolver.openOutputStream(filesUri).use { output ->
+                        wb.write(output)
+                    }
+                }
+            } else {
+                val filePath = File(context?.getExternalFilesDir(null), "Report.xls")
+                val outputStream = FileOutputStream(filePath)
+                fileUri = filePath.absolutePath.toUri()
+                wb.write(outputStream)
+            }
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.setDataAndType(fileUri,"*/*")
+            startActivity(intent)
             Toast.makeText(context, "OK", Toast.LENGTH_LONG).show()
         } catch (e: IOException) {
             e.printStackTrace()
-            Toast.makeText(
-                context, "NO OK", Toast.LENGTH_LONG
-            ).show()
-            try {
-                outputStream?.close()
-            } catch (ex: IOException) {
-                ex.printStackTrace()
-            }
+            Toast.makeText(context, "NO OK", Toast.LENGTH_LONG).show()
         }
 
     }
